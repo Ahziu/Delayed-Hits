@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(Caching)
 
-# Library
-link_libraries(hashing)
+# Libraries
+link_libraries(hashing config++)
 
 # Sources
 include_directories(include)

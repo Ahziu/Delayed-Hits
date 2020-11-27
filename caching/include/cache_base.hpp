@@ -15,8 +15,12 @@
 #include <boost/bimap.hpp>
 #include <boost/program_options.hpp>
 
+// Libconfig headers
+#include <libconfig.h++>
+
 // Custom headers
 #include "utils.hpp"
+#include "cache_config.hpp"
 #include "cache_common.hpp"
 
 namespace caching {
@@ -398,6 +402,7 @@ public:
         size_t z;
         double c_scale;
         std::string trace_fp;
+        std::string config_fp;
         std::string packets_fp;
         size_t set_associativity;
         size_t num_warmup_cycles;
@@ -411,6 +416,7 @@ public:
             desc.add_options()
                 ("help",        "Prints this message")
                 ("trace",       value<std::string>(&trace_fp)->required(),            "Input trace file path")
+                ("config",      value<std::string>(&config_fp)->required(),           "Cache config file path")
                 ("cscale",      value<double>(&c_scale)->required(),                  "Parameter: Cache size (%Concurrent Flows)")
                 ("zfactor",     value<size_t>(&z)->required(),                        "Parameter: Z")
                 ("packets",     value<std::string>(&packets_fp)->default_value(""),   "[Optional] Output packets file path")
@@ -438,6 +444,19 @@ public:
             std::cerr << "Unknown Error." << std::endl;
             return;
         }
+
+        // Parse the config file
+        libconfig::Config cfg;
+        try { cfg.readFile(config_fp.c_str()); }
+        catch(const libconfig::FileIOException &fioex) {
+            std::cerr << "I/O error while reading config file." << std::endl;
+        }
+        catch(const libconfig::ParseException &pex) {
+            std::cerr << "Parse error at " << pex.getFile()
+                      << ":" << pex.getLine() << " - "
+                      << pex.getError() << std::endl;
+        }
+        GlobalConfig::from(cfg);
 
         const auto flow_counts = utils::getFlowCounts(trace_fp);
         size_t num_total_flows = flow_counts.num_total_flows;
