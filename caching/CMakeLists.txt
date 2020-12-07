@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 project(Caching)
-
-# Libraries
-link_libraries(hashing config++)
+set( CMAKE_VERBOSE_MAKEFILE on )
+find_package(PkgConfig)
+pkg_check_modules(LIBCONFIG_PLUSPLUS libconfig REQUIRED)
+link_libraries(hashing /usr/local/Cellar/libconfig/1.7.2/lib/libconfig++.a)
 
 # Sources
 include_directories(include)

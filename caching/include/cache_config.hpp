@@ -19,11 +19,13 @@ private:
     const std::string kPolicy; // Replacement policy
     const uint kNumSets; // Number of cache sets in this tier
     const uint kAssociativity; // Set-associativity for this tier
+    const uint missLatency; 
 
     TierConfig() = delete;
     explicit TierConfig(const std::string policy, const uint num_sets,
-                        const uint associativity) : kPolicy(policy),
-                        kNumSets(num_sets), kAssociativity(associativity) {}
+                        const uint associativity, const uint miss) : kPolicy(policy),
+                        kNumSets(num_sets), kAssociativity(associativity),
+                        missLatency(miss) {}
 public:
     // Factory method
     static TierConfig from(const libconfig::Setting &tier) {
@@ -31,19 +33,22 @@ public:
         uint num_sets = 0;
         std::string policy;
         uint associativity = 0;
+        uint miss = 0;
 
         if (!tier.lookupValue("policy", policy) ||
+            !tier.lookupValue("miss_latency", miss) ||
             !tier.lookupValue("num_sets", num_sets) ||
             !tier.lookupValue("associativity", associativity)) {
             throw std::runtime_error("Bad configuration file.");
         }
-        return TierConfig(policy, num_sets, associativity);
+        return TierConfig(policy, num_sets, associativity, miss);
     }
 
     // Accessors
     uint getNumSets() const { return kNumSets; }
     const std::string& getPolicy() const { return kPolicy; }
     uint getAssociativity() const { return kAssociativity; }
+    uint getMiss() const { return missLatency; }
 };
 
 /**
@@ -114,6 +119,15 @@ public:
         }
         global_config.validate();
         return global_config;
+    }
+
+    size_t get_tiers_size() {
+        return tiers_.size();
+    }
+
+    const TierConfig get_tier(size_t index) const {
+        assert(index >= 0 && index < tiers_.size());
+        return tiers_[index];
     }
 };
 

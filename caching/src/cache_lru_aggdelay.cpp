@@ -159,8 +159,8 @@ public:
  * Implements a single-tiered LRUAggregateDelay cache.
  */
 class LRUAggregateDelayCache : public BaseCache {
-private:
-    double beta_inv_; // Inverse of the Beta-parameter defined in GD*
+//private:
+    //double beta_inv_; // Inverse of the Beta-parameter defined in GD*
 
 public:
     LRUAggregateDelayCache(const size_t miss_latency, const size_t cache_set_associativity,
