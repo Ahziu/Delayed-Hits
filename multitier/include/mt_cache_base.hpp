@@ -105,7 +105,6 @@ public:
 
     void set_prev_tier(MTBaseCache* pt) {
         prev = pt;
-        kCacheHitLatency = pt->getCacheMissLatency();
     }
 
     /** Records arrival of a new packet. */
@@ -142,12 +141,12 @@ public:
                 tier_index(tier), next(nullptr), prev(nullptr), kCacheHitLatency(0) {}
     /** Constructor with tier config. */
     MTBaseCache(TierConfig t, int index, const bool penalize_insertions, const caching::HashType hash_type):
-                kCacheMissLatency(t.getMiss()), kMaxNumCacheSets(t.getNumSets()),
+                kCacheMissLatency(t.getMissLatency()), kMaxNumCacheSets(t.getNumSets()),
                 kMaxNumCacheEntries(t.getNumSets() * t.getAssociativity()),
                 kCacheSetAssociativity(t.getAssociativity()),
                 kIsPenalizeInsertions(penalize_insertions),
                 kHashFamily(1, hash_type),
-                tier_index(index), next(nullptr), prev(nullptr), kCacheHitLatency(0) {}
+                tier_index(index), next(nullptr), prev(nullptr), kCacheHitLatency(t.getHitLatency()) {}
     /** Destructor. */
     virtual ~MTBaseCache() {
         assert(cache_sets_.size() == kMaxNumCacheSets);

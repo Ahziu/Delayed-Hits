@@ -19,13 +19,12 @@ private:
     const std::string kPolicy; // Replacement policy
     const uint kNumSets; // Number of cache sets in this tier
     const uint kAssociativity; // Set-associativity for this tier
-    const uint missLatency; 
-
+    uint missLatency = 0;
+    uint hitLatency = 0;
     TierConfig() = delete;
     explicit TierConfig(const std::string policy, const uint num_sets,
-                        const uint associativity, const uint miss) : kPolicy(policy),
-                        kNumSets(num_sets), kAssociativity(associativity),
-                        missLatency(miss) {}
+                        const uint associativity) : kPolicy(policy),
+                        kNumSets(num_sets), kAssociativity(associativity) {}
 public:
     // Factory method
     static TierConfig from(const libconfig::Setting &tier) {
@@ -33,22 +32,29 @@ public:
         uint num_sets = 0;
         std::string policy;
         uint associativity = 0;
-        uint miss = 0;
 
         if (!tier.lookupValue("policy", policy) ||
-            !tier.lookupValue("miss_latency", miss) ||
             !tier.lookupValue("num_sets", num_sets) ||
             !tier.lookupValue("associativity", associativity)) {
             throw std::runtime_error("Bad configuration file.");
         }
-        return TierConfig(policy, num_sets, associativity, miss);
+        return TierConfig(policy, num_sets, associativity);
+    }
+
+    void setMissLatency(uint miss) {
+        missLatency = miss;
+    }
+
+    void setHitLatency(uint hit) {
+        hitLatency = hit;
     }
 
     // Accessors
+    uint getMissLatency() {return missLatency;}
+    uint getHitLatency() {return hitLatency;}
     uint getNumSets() const { return kNumSets; }
     const std::string& getPolicy() const { return kPolicy; }
     uint getAssociativity() const { return kAssociativity; }
-    uint getMiss() const { return missLatency; }
 };
 
 /**
@@ -116,6 +122,10 @@ public:
         const libconfig::Setting& latencies = root["latencies"];
         for (int idx = 0; idx < latencies.getLength(); idx++) {
             global_config.latencies_.push_back(latencies[idx]);
+            global_config.tiers_[idx].setMissLatency(latencies[idx]);
+        }
+        for (int idx = 1; idx < latencies.getLength(); idx++) {
+            global_config.tiers_[idx].setHitLatency(latencies[idx - 1]);
         }
         global_config.validate();
         return global_config;
@@ -128,6 +138,10 @@ public:
     const TierConfig get_tier(size_t index) const {
         assert(index >= 0 && index < tiers_.size());
         return tiers_[index];
+    }
+
+    std::vector<uint> get_latencies() const {
+        return latencies_;
     }
 };
 
