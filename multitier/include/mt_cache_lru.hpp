@@ -98,23 +98,11 @@ class MTLRUCache : public MTBaseCache {
 public:
     MTLRUCache(TierConfig t, int index, const bool penalize_insertions, const HashType hash_type):
                 MTBaseCache(t, index, penalize_insertions, hash_type) {
-        SUPPRESS_UNUSED_WARNING(argc);
-        SUPPRESS_UNUSED_WARNING(argv);
-
-        // Initialize the cache sets
         for (size_t idx = 0; idx < kMaxNumCacheSets; idx++) {
             cache_sets_.push_back(new LRUCacheSet(kCacheSetAssociativity));
         }
     }
-    virtual ~LRUCache() {}
+    ~MTLRUCache() {}
 
-    /**
-     * Returns the canonical cache name.
-     */
     virtual std::string name() const override { return "MTLRUCache"; }
 };
-
-// Run default benchmarks
-int main(int argc, char** argv) {
-    MTBaseCache::defaultBenchmark(argc, argv);
-}
