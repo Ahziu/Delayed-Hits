@@ -151,10 +151,6 @@ void MTCacheSystem::benchmark(const std::string& trace_fp, const std::string& pa
     std::cout << "Average latency is: " << std::fixed << std::setprecision(2)
                 << average_latency << std::endl << std::endl;
 
-    // Free allocated spaces
-    for (auto tier: tiers) {
-        delete(tier);
-    }
 }
 
 int main(int argc, char** argv) {
